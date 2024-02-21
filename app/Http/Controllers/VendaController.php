@@ -7,6 +7,7 @@ use App\Models\Cliente;
 use App\Models\Produto;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Barryvdh\DomPDF\Facade\PDF;
 
 class VendaController extends Controller
 {
@@ -30,9 +31,9 @@ class VendaController extends Controller
      */
     public function create()
     {
-        $sales = $this->sale->all();
-        $clients = Cliente::all();
-        $products = Produto::all();
+        $sales = $this->sale->where('id_seller', '=', Auth::user()->id)->get();
+        $clients = Cliente::withTrashed()->get();
+        $products = Produto::withTrashed()->get();
 
         return view('sales', [
             'sales' => $sales,
@@ -53,15 +54,18 @@ class VendaController extends Controller
         ]);
 
         foreach ($request->products as $product) {
-            $sale->items()->create([
-                'id_product' => $product[0],
-                'quantity' => $product[1],
-                'subtotal' => $request->total,
-            ]);
+            if($product[2] != 0){
+                $sale->items()->create([
+                    'id_product' => $product[0],
+                    'price_uni' => $product[1],
+                    'quantity' => $product[2],
+                ]);
+            }
         }
 
         foreach ($request->payments as $payment) {
             $sale->payments()->create([
+                'num' => $payment[2],
                 'value' => $payment[0],
                 'invoice' => $payment[1],
             ]);
@@ -73,9 +77,12 @@ class VendaController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Venda $sale)
-    {
-        //
+    public function gerarPdf(Request $request){
+        $sales = $this->sale->orderByDesc('created_at')->get();
+    
+        $pdf = PDF::loadView('pdf', ['sales' => $sales])->setPaper('a4', 'portrait');
+    
+        return $pdf->download('vendas-vekshop.pdf');
     }
 
     /**
@@ -96,7 +103,34 @@ class VendaController extends Controller
      */
     public function update(Request $request, Venda $sale)
     {
-        $sale->save($request->all);
+        $sale->method = $request->method;
+        $sale->save();
+
+        foreach ($request->products as $product) {
+            if($product[2] != 0){
+                $sale->items()->firstOrCreate([
+                    'id_product' => $product[0],
+                    'price_uni' => $product[1],
+                    'quantity' => $product[2],
+                ]);
+            }else{
+                if($sale->items()->where('id_product', $product[0])->exists()){
+                    $sale->items()->where('id_product', $product[0])->delete();
+                }
+            }
+        }
+
+        $sale->payments()->where('id_sale', $sale->id)->delete();
+
+        foreach ($request->payments as $payment) {
+            $sale->payments()->create([
+                'num' => $payment[2],
+                'value' => $payment[0],
+                'invoice' => $payment[1],
+            ]);
+        }
+
+        return redirect()->route('sale.create')->with('status', 'Venda Editada!');
     }
 
     /**

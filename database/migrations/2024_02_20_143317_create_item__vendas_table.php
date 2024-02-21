@@ -21,7 +21,7 @@ return new class extends Migration
             $table->foreign('id_product')->references('id')->on('produtos');
 
             $table->integer('quantity');
-            $table->double('subtotal', 10, 2);
+            $table->double('price_uni', 10, 2);
             $table->softDeletes();
         });
     }

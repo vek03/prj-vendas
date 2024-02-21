@@ -17,6 +17,7 @@ return new class extends Migration
             $table->unsignedBigInteger('id_sale');
             $table->foreign('id_sale')->references('id')->on('vendas');
 
+            $table->integer('num');
             $table->date('invoice');
             $table->double('value');
             $table->softDeletes();

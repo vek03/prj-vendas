@@ -26,6 +26,13 @@ Route::get('/', function () {
 
 
 
+//FALLBACK
+Route::fallback(function () {
+    return view('dashboard');
+});
+
+
+
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
@@ -68,6 +75,8 @@ Route::middleware('auth')->group(function () {
     Route::patch('/sale-edit/{sale}', [VendaController::class, 'update'])->name('sale.update');
 
     Route::delete('/sale-delete/{sale}', [VendaController::class, 'destroy'])->name('sale.destroy');
+
+    Route::get('/gerar-pdf-vendas', [VendaController::class, 'gerarPdf'])->name('sale.gerar-pdf');
 });
 
 

@@ -18,7 +18,7 @@ class Item_Venda extends Model
         'id_sale',
         'id_product',
         'quantity',
-        'subtotal',
+        'price_uni',
     ];
 
     public function sale(): BelongsTo

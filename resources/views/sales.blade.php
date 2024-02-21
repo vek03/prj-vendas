@@ -62,6 +62,7 @@
                             <table class="min-w-full">
                                 <thead class="border-b">
                                     <tr>
+                                        <th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">ID</th>
                                         <th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">Nome</th>
                                         <th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">Preço</th>
                                         <th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">Quantidade</th>
@@ -73,10 +74,15 @@
                                         <?php $i = 0; ?>
                                         @foreach($products as $product)
                                         <tr class="border-b">
-                                            <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">{{ $product->name }}</td>
-                                            <td id="price{{ $i }}" class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">{{ $product->price }}</td>
                                             <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
-                                                <input id="count{{ $i }}" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1" step="any" type="number" name="products[0]" readonly value=0 required="required" autocomplete="payments[0]">
+                                                <input id="id_prod{{ $i }}" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1" step="any" type="number" name="products[{{ $i }}][0]" readonly value="{{ $product->id }}" required="required" autocomplete="products[0]">
+                                            </td>
+                                            <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">{{ $product->name }}</td>
+                                            <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                                                <input id="price{{ $i }}" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1" step="any" type="number" name="products[{{ $i }}][1]" readonly value="{{ $product->price }}" required="required" autocomplete="products[0]">
+                                            </td>
+                                            <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
+                                                <input id="count{{ $i }}" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1" step="any" type="number" name="products[{{ $i }}][2]" readonly value=0 required="required" autocomplete="products[0]">
                                             </td>
                                             <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
                                                 <x-secondary-button id="del-prod{{ $i }}" onclick="del('count{{ $i }}')" class="bg-green">-</x-secondary-button>
@@ -98,6 +104,7 @@
 
                         <div class="mb-5">
                             <p class="font-extrabold md:text-2xl mt-5 text-2xl text-black">Pagamento</p>
+                            <p class="font-extrabold text-black">A venda só será cadastrada após selecionar algum produto e dividir corretamente as parcelas*</p>
                             <hr>
 
                             <div class="grid md:grid-cols-3 md:gap-6 m-3">
@@ -116,7 +123,12 @@
                             </div>
                         </div>
 
-                        <div id="payments" class="grid md:grid-cols-2 md:gap-6 m-3">
+                        <div class="grid md:grid-cols-3 md:gap-3 m-3">
+                            <div class="relative z-0 mb-5 group">
+                                <label class="block font-medium text-sm text-gray-700" for="payments[0][2]">N° Parcela</label>
+                                <input readonly value="0" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full" id="id{{ $i }}" step="any" type="number" name="payments[0][2]" required="required" autofocus="autofocus" autocomplete="0">
+                            </div>
+
                             <div class="relative z-0 w-full mb-5 group">
                                 <label class="block font-medium text-sm text-gray-700" for="payments[0][0]">Valor</label>
                                 <input oninput="calc2()" value=0 class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full" id="value0" step="any" type="number" name="payments[0][0]" required="required" autofocus="autofocus" autocomplete="payments[0][0]">
@@ -128,10 +140,9 @@
                                 <input class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full" id="payments[0][1]" type="date" name="payments[0][1]" required="required" autofocus="autofocus" autocomplete="payments[0][1]">
                                 <x-input-error :messages="$errors->get('payments[0][1]')" class="mt-2" />
                             </div>
-
-                            <hr>
-                            <br>
                         </div>
+
+                        <div id="payments"></div>
 
                         <div class="mb-5">
                             <x-secondary-button id="add-pay" class="bg-green">+</x-secondary-button>
@@ -139,7 +150,7 @@
                         </div>
 
                         <div class="flex items-center justify-end mt-4">
-                            <x-primary-button class="ms-4">
+                            <x-primary-button id="submit" class="ms-4">
                                 {{ __('Cadastrar') }}
                             </x-primary-button>
                         </div>
@@ -157,10 +168,26 @@
                         <p class="font-extrabold md:text-4xl mt-5 text-3xl text-black">Vendas</p>
                     </div>
 
+                    <div class="mb-4">
+                        <label for="search" class="block text-sm font-medium text-gray-700">Filtrar por Cliente:</label>
+                        <input type="text" id="search" oninput="filter()" name="search" class="mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 block w-full" placeholder="Digite o nome do vendedor...">
+                    </div>
+
+                    <div class="mb-4">
+                        <a href="{{ route('sale.gerar-pdf') }}" class="btn btn-warning btn-sm">
+                            <x-secondary-button>
+                                {{ __('Gerar PDF') }}
+                            </x-secondary-button>
+                        </a>
+                    </div>
+
+                    
+
                     <div class="overflow-y-auto max-h-96">
-                        <table class="min-w-full">
+                        <table id="tb" class="min-w-full">
                             <thead class="border-b">
                                 <tr>
+                                    <th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">ID</th>
                                     <th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">Vendedor</th>
                                     <th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">Cliente</th>
                                     <th scope="col" class="text-sm font-medium text-gray-900 px-6 py-4 text-left">Total</th>
@@ -171,9 +198,10 @@
                                 @if(!empty($sales[0]))
                                     @foreach($sales as $sale)
                                     <tr class="border-b">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $sale->id }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $sale->seller()->first()->name }}</td>
-                                        <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">{{ $sale->client->first()->name }}</td>
-                                        <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">{{  'R$ '.number_format($sale->items()->sum('subtotal'), 2, ',', '.')    }}</td>
+                                        <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">{{ $sale->client()->first()->name }}</td> 
+                                        <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">{{  'R$ '.number_format(DB::table('item__vendas')->select(DB::raw('sum(quantity * price_uni) AS total'))->where('id_sale', $sale->id)->first()->total, 2, ',', '.')    }}</td>
                                         <td class="text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap">
                                             <x-danger-button x-data="" x-on:click.prevent="$dispatch('open-modal', 'confirm-user-deletion{{$sale->id}}')">
                                                 {{ __('Delete') }}
@@ -228,3 +256,4 @@
 </x-app-layout>
 
 <script src="{{ asset('js/sale.js') }}"></script>
+<script src="{{ asset('js/filter.js') }}"></script>

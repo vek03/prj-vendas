@@ -4,7 +4,7 @@ $(window).on("load", function(){
 
 
 
-var count1 = 0;
+var count1 = parseInt(document.getElementById('numPay').innerText) - 1;
 
 
 
@@ -13,7 +13,7 @@ document.getElementById('add-pay').addEventListener('click', function () {
     count1++;
 
     payment.innerHTML = `
-        <div id="dcontainer` + count1 + `" class="grid md:grid-cols-3 md:gap-6 m-3">
+        <div  class="grid md:grid-cols-3 md:gap-6 m-3">
             <div id="did` + count1 + `" class="relative z-0 mb-5 group">
                 <label class="block font-medium text-sm text-gray-700" for="payments[0][2]">N°</label>
                 <input readonly value="` + count1 + `" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full" id="id` + count1 + `" step="any" type="number" name="payments[` + count1 + `][2]" required="required" autofocus="autofocus" autocomplete="0">
@@ -40,7 +40,6 @@ document.getElementById('add-pay').addEventListener('click', function () {
 document.getElementById('del-pay').addEventListener('click', function () {
     if(count1 > 0)
     {
-        $('#dcontainer' + count1 + '').remove();
         $('#did' + count1 + '').remove();
         $('#dvalue' + count1 + '').remove();
         $('#dinvoice' + count1 + '').remove();
