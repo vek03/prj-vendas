@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
+        <title>{{ config('app.name', 'Shop') }}</title>
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
@@ -13,6 +13,7 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
     </head>
     <body class="font-sans antialiased">
         <div class="min-h-screen bg-gray-100">
@@ -27,10 +28,23 @@
                 </header>
             @endif
 
+
             <!-- Page Content -->
             <main>
                 {{ $slot }}
             </main>
+
+
+            <!-- Page Content -->
+            <footer>
+                <div class="relative bottom-0 w-full bg-white px-10 py-3">
+                    <hr class="fixed">
+                    <div class="text-center text-lg">
+                        @2024 Copyright <strong><span>VekShop</span></strong> | Todos os Direitos Reservados
+                    </div>
+                    <hr class="fixed">
+                </div>
+            </footer>
         </div>
     </body>
 </html>
